@@ -7,42 +7,39 @@ public class MicManager : MonoBehaviour
 {
     
      public AudioSource audioSource;
-     int recordDuration = 10;
+     int recordDuration = 10; //Max duration for clip
      int sampleRate = 16000; 
      string microphoneName;
     public AudioClip audioClip;
-    public float actualDuration;
+    public float actualDuration; //Length in seconds for the actual recorderd clip
 
-
-    // Start is called before the first frame update
     void Start()
     {
       
     }
-
-    // Update is called once per frame
     void Update()
     {
         
     }
-
+    //Records clip with microphone
     public void StartRecording()
     {
         string device = Microphone.devices[0];
         audioClip = Microphone.Start(device, true, recordDuration, sampleRate);
     }
-
+    //Plays recording
     public void PlayRecording()
     {
         audioSource.clip = audioClip;
         audioSource.Play();
+        //Finds currently selected bird and calls its PlayBird function
         Bird selectedBird = Bird.GetSelectedBird();
         if (selectedBird != null)
         {
             selectedBird.PlayBird();
         }
     }
-
+    //Stops recording
     public void StopRecording()
     {
         int samplesRecorded = Microphone.GetPosition(null);

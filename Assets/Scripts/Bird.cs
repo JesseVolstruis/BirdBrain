@@ -17,11 +17,12 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
     private static List<Bird> allBirds = new List<Bird>();
     [SerializeField]
     float hearingRadius = 4f;
+    private GameObject radiusCircle;
 
     // Start is called before the first frame update
     void Start()
     {
-
+        
     }
 
     // Update is called once per frame
@@ -31,9 +32,10 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
     }
     private void Awake()
     {
-        
+        radiusCircle = transform.GetChild(0).gameObject; //Visual indicator for hearing radius
+        radiusCircle.SetActive(false);
         mic = FindAnyObjectByType<MicManager>();
-        allBirds.Add(this);
+        allBirds.Add(this); //Adds this bird object to static list of all birds
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
         {
@@ -56,6 +58,7 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
         Debug.Log("End drag");
     }
 
+    //Drag and Drop code for bird objects
     public void OnDrag(PointerEventData eventData)
     {
         Vector3 worldPos = Camera.main.ScreenToWorldPoint(eventData.position);
@@ -67,7 +70,7 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
     {
         SetSelected(true);
 
-
+        //Deselects all birds other than this one
         foreach (Bird bird in allBirds)
         {
             if (bird != this)
@@ -76,6 +79,7 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
             }
         }
 
+        //Saves recorded clip as a local clip for potential manipulation
         if (mic.audioClip != null)
         {
             clip = mic.audioClip;
@@ -87,6 +91,10 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
     void SetSelected(bool value)
     {
         isSelected = value;
+        if (radiusCircle != null)
+        {
+            radiusCircle.SetActive(value);
+        }
     }
 
     public static Bird GetSelectedBird()
@@ -98,7 +106,8 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
         }
         return null;
     }
-
+    
+    //Coroutine for playing the bird sounds
     IEnumerator PlayBirdSound(AudioClip clipToPlay)
     {
         yield return new WaitForSeconds(mic.actualDuration + 1f);
@@ -106,6 +115,7 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
         audioSource.clip = clipToPlay;
         audioSource.Play();
 
+        //Broadcasts clip to all other birds in its radius
         foreach (Bird bird in allBirds)
         {
             if (bird != this && IsInHearingRange(bird))
@@ -115,6 +125,7 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
         }
     }
 
+    //function for the coroutine
     public void PlayBird()
     {
         if (clip != null)
