@@ -11,6 +11,7 @@ public class MicManager : MonoBehaviour
      int sampleRate = 16000; 
      string microphoneName;
     public AudioClip audioClip;
+    public float actualDuration;
 
 
     // Start is called before the first frame update
@@ -39,6 +40,12 @@ public class MicManager : MonoBehaviour
 
     public void StopRecording()
     {
+        int samplesRecorded = Microphone.GetPosition(null);
+
         Microphone.End(null);
+
+        actualDuration = samplesRecorded / (float)sampleRate;
+
+        Debug.Log("Actual Duration: " + actualDuration);
     }
 }

@@ -13,6 +13,18 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
     bool isSelected = false;
     [SerializeField]
     private static List<Bird> allBirds = new List<Bird>();
+
+    // Start is called before the first frame update
+    void Start()
+    {
+
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+
+    }
     private void Awake()
     {
         
@@ -56,7 +68,7 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
         }
 
         clip = mic.audioClip;
-        mic.audioSource.Play();
+        StartCoroutine(PlayBirdSound());
     }
 
     void SetSelected(bool value)
@@ -64,15 +76,11 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
         isSelected = value;
     }
 
-    // Start is called before the first frame update
-    void Start()
+    IEnumerator PlayBirdSound()
     {
-        
+        yield return new WaitForSeconds(mic.actualDuration +1f);
+        mic.audioSource.Play();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    
 }
