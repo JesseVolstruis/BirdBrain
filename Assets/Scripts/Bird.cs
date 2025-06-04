@@ -68,7 +68,6 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
         }
 
         clip = mic.audioClip;
-        StartCoroutine(PlayBirdSound());
     }
 
     void SetSelected(bool value)
@@ -76,10 +75,25 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
         isSelected = value;
     }
 
+    public static Bird GetSelectedBird()
+    {
+        foreach (Bird bird in allBirds)
+        {
+            if (bird.isSelected)
+                return bird;
+        }
+        return null;
+    }
+
     IEnumerator PlayBirdSound()
     {
         yield return new WaitForSeconds(mic.actualDuration +1f);
         mic.audioSource.Play();
+    }
+
+    public void PlayBird()
+    {
+        StartCoroutine(PlayBirdSound());
     }
 
     

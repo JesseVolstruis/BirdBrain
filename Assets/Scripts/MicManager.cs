@@ -36,6 +36,11 @@ public class MicManager : MonoBehaviour
     {
         audioSource.clip = audioClip;
         audioSource.Play();
+        Bird selectedBird = Bird.GetSelectedBird();
+        if (selectedBird != null)
+        {
+            selectedBird.PlayBird();
+        }
     }
 
     public void StopRecording()
