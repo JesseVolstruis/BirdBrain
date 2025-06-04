@@ -9,10 +9,14 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
  
     MicManager mic;
     public AudioClip clip;
+    public AudioClip originalClip;
+    private AudioSource audioSource;
     [SerializeField]
     bool isSelected = false;
     [SerializeField]
     private static List<Bird> allBirds = new List<Bird>();
+    [SerializeField]
+    float hearingRadius = 4f;
 
     // Start is called before the first frame update
     void Start()
@@ -30,6 +34,11 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
         
         mic = FindAnyObjectByType<MicManager>();
         allBirds.Add(this);
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
     }
 
     private void OnDestroy()
@@ -67,7 +76,12 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
             }
         }
 
-        clip = mic.audioClip;
+        if (mic.audioClip != null)
+        {
+            clip = mic.audioClip;
+            originalClip = mic.audioClip;
+        }
+
     }
 
     void SetSelected(bool value)
@@ -85,16 +99,41 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
         return null;
     }
 
-    IEnumerator PlayBirdSound()
+    IEnumerator PlayBirdSound(AudioClip clipToPlay)
     {
-        yield return new WaitForSeconds(mic.actualDuration +1f);
-        mic.audioSource.Play();
+        yield return new WaitForSeconds(mic.actualDuration + 1f);
+
+        audioSource.clip = clipToPlay;
+        audioSource.Play();
+
+        foreach (Bird bird in allBirds)
+        {
+            if (bird != this && IsInHearingRange(bird))
+            {
+                bird.ReceiveClip(clipToPlay);
+            }
+        }
     }
 
     public void PlayBird()
     {
-        StartCoroutine(PlayBirdSound());
+        if (clip != null)
+            StartCoroutine(PlayBirdSound(clip));
     }
 
-    
+    public void ReceiveClip(AudioClip incomingClip)
+    {
+        // Save it as their new clip (they heard it)
+        clip = incomingClip;
+
+        // Play it after the delay using coroutine
+        StartCoroutine(PlayBirdSound(incomingClip));
+    }
+
+    private bool IsInHearingRange(Bird other)
+    {
+        return Vector3.Distance(transform.position, other.transform.position) <= hearingRadius;
+    }
+
+
 }
