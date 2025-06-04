@@ -6,12 +6,24 @@ using UnityEngine.EventSystems;
 public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndDragHandler, IDragHandler
 {
 
-    private RectTransform rectTransform;
+ 
+    MicManager mic;
+    public AudioClip clip;
+    [SerializeField]
+    bool isSelected = false;
+    [SerializeField]
+    private static List<Bird> allBirds = new List<Bird>();
     private void Awake()
     {
-        rectTransform = GetComponent<RectTransform>();
+        
+        mic = FindAnyObjectByType<MicManager>();
+        allBirds.Add(this);
     }
 
+    private void OnDestroy()
+    {
+        allBirds.Remove(this);
+    }
 
     public void OnBeginDrag(PointerEventData eventData)
     {
@@ -25,7 +37,6 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
 
     public void OnDrag(PointerEventData eventData)
     {
-        
         Vector3 worldPos = Camera.main.ScreenToWorldPoint(eventData.position);
         worldPos.z = 0f; 
         transform.position = worldPos;
@@ -33,7 +44,24 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        Debug.Log("Cicked on bird yay");
+        SetSelected(true);
+
+
+        foreach (Bird bird in allBirds)
+        {
+            if (bird != this)
+            {
+                bird.SetSelected(false);
+            }
+        }
+
+        clip = mic.audioClip;
+        mic.audioSource.Play();
+    }
+
+    void SetSelected(bool value)
+    {
+        isSelected = value;
     }
 
     // Start is called before the first frame update

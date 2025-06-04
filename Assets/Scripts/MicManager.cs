@@ -5,8 +5,8 @@ using UnityEngine;
 
 public class MicManager : MonoBehaviour
 {
-    [SerializeField]
-     AudioSource audioSource;
+    
+     public AudioSource audioSource;
      int recordDuration = 10;
      int sampleRate = 16000; 
      string microphoneName;
