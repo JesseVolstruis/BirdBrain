@@ -1388,7 +1388,7 @@ CircleCollider2D:
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
-  m_Radius: 0.5
+  m_Radius: 2
 --- !u!114 &1678751423
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1405,6 +1405,8 @@ MonoBehaviour:
   originalClip: {fileID: 0}
   isSelected: 0
   hearingRadius: 4
+  closedBird: {fileID: 21300000, guid: e4f9c9a2ec210ba4aa08e4f221c9f176, type: 3}
+  openBird: {fileID: 21300000, guid: cc0c83879deee0244a5f6d4aa9eced13, type: 3}
 --- !u!212 &1678751424
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -1526,7 +1528,7 @@ CircleCollider2D:
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
-  m_Radius: 0.5
+  m_Radius: 2
 --- !u!114 &1730299961
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1543,6 +1545,8 @@ MonoBehaviour:
   originalClip: {fileID: 0}
   isSelected: 0
   hearingRadius: 4
+  closedBird: {fileID: 21300000, guid: 4c4a673bee0f97a4890b3014195b55c1, type: 3}
+  openBird: {fileID: 21300000, guid: cae65a4f398463542a141bca36979bdd, type: 3}
 --- !u!212 &1730299962
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -1664,7 +1668,7 @@ CircleCollider2D:
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
-  m_Radius: 0.5
+  m_Radius: 2
 --- !u!114 &1826951664
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1681,6 +1685,8 @@ MonoBehaviour:
   originalClip: {fileID: 0}
   isSelected: 0
   hearingRadius: 4
+  closedBird: {fileID: 21300000, guid: 1ed1e1e5251bb844ea8d11084e98c184, type: 3}
+  openBird: {fileID: 21300000, guid: ee10e31535e9ba74cbe21788480ce2da, type: 3}
 --- !u!212 &1826951665
 SpriteRenderer:
   m_ObjectHideFlags: 0

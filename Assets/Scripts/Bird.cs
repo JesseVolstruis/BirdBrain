@@ -18,18 +18,9 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
     [SerializeField]
     float hearingRadius = 4f;
     private GameObject radiusCircle;
+    public Sprite closedBird;
+    public Sprite openBird;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
     private void Awake()
     {
         radiusCircle = transform.GetChild(0).gameObject; //Visual indicator for hearing radius
@@ -106,16 +97,22 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
         }
         return null;
     }
-    
+
     //Coroutine for playing the bird sounds
     IEnumerator PlayBirdSound(AudioClip clipToPlay)
     {
         yield return new WaitForSeconds(mic.actualDuration + 1f);
 
+        GetComponent<SpriteRenderer>().sprite = openBird;
+
         audioSource.clip = clipToPlay;
         audioSource.Play();
 
-        //Broadcasts clip to all other birds in its radius
+        yield return new WaitForSeconds(clipToPlay.length);
+
+        GetComponent<SpriteRenderer>().sprite = closedBird;
+
+        // Broadcasts clip to all other birds in its radius
         foreach (Bird bird in allBirds)
         {
             if (bird != this && IsInHearingRange(bird))
@@ -124,6 +121,7 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
             }
         }
     }
+
 
     //function for the coroutine
     public void PlayBird()

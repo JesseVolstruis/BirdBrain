@@ -26,6 +26,7 @@ public class MicManager : MonoBehaviour
     {
         string device = Microphone.devices[0];
         audioClip = Microphone.Start(device, true, recordDuration, sampleRate);
+        Debug.Log(device);
     }
     //Plays recording
     public void PlayRecording()
