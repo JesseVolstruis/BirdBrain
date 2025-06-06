@@ -102,13 +102,12 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
     IEnumerator PlayBirdSound(AudioClip clipToPlay)
     {
         yield return new WaitForSeconds(mic.actualDuration + 1f);
-
         GetComponent<SpriteRenderer>().sprite = openBird;
 
         audioSource.clip = clipToPlay;
         audioSource.Play();
 
-        yield return new WaitForSeconds(clipToPlay.length);
+        yield return new WaitForSeconds(mic.actualDuration);
 
         GetComponent<SpriteRenderer>().sprite = closedBird;
 
