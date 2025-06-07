@@ -20,6 +20,7 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
     private GameObject radiusCircle;
     public Sprite closedBird;
     public Sprite openBird;
+    public Animator notesAnimator;
 
     private void Awake()
     {
@@ -28,6 +29,7 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
         mic = FindAnyObjectByType<MicManager>();
         allBirds.Add(this); //Adds this bird object to static list of all birds
         audioSource = GetComponent<AudioSource>();
+        notesAnimator.gameObject.SetActive(false);
         if (audioSource == null)
         {
             audioSource = gameObject.AddComponent<AudioSource>();
@@ -102,7 +104,12 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
     IEnumerator PlayBirdSound(AudioClip clipToPlay)
     {
         yield return new WaitForSeconds(mic.actualDuration + 1f);
+        
         GetComponent<SpriteRenderer>().sprite = openBird;
+
+        notesAnimator.gameObject.SetActive(true);
+        notesAnimator = transform.Find("MusicNotes").GetComponent<Animator>();
+        notesAnimator.Play("MusicNotesFloat");
 
         audioSource.clip = clipToPlay;
         audioSource.Play();
@@ -110,6 +117,8 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
         yield return new WaitForSeconds(mic.actualDuration);
 
         GetComponent<SpriteRenderer>().sprite = closedBird;
+        notesAnimator.gameObject.SetActive(false);
+        notesAnimator.StopPlayback();
 
         // Broadcasts clip to all other birds in its radius
         foreach (Bird bird in allBirds)
