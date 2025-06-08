@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -8,26 +10,28 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
 
  
     MicManager mic;
+    BirdManager birdManager;
     public AudioClip clip;
     public AudioClip originalClip;
     private AudioSource audioSource;
     [SerializeField]
     bool isSelected = false;
-    [SerializeField]
-    private static List<Bird> allBirds = new List<Bird>();
+  
     [SerializeField]
     float hearingRadius = 4f;
     private GameObject radiusCircle;
     public Sprite closedBird;
     public Sprite openBird;
     public Animator notesAnimator;
+    public float attackThreshold=0.01f, releaseThreshold=0.005f, peakPickThreshold=0.008f;
 
     private void Awake()
     {
         radiusCircle = transform.GetChild(0).gameObject; //Visual indicator for hearing radius
         radiusCircle.SetActive(false);
         mic = FindAnyObjectByType<MicManager>();
-        allBirds.Add(this); //Adds this bird object to static list of all birds
+        birdManager = FindAnyObjectByType<BirdManager>();
+        birdManager.allBirds.Add(this);
         audioSource = GetComponent<AudioSource>();
         notesAnimator.gameObject.SetActive(false);
         if (audioSource == null)
@@ -38,17 +42,17 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
 
     private void OnDestroy()
     {
-        allBirds.Remove(this);
+        birdManager.allBirds.Remove(this);
     }
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        Debug.Log("Begin Drag");
+        UnityEngine.Debug.Log("Begin Drag");
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        Debug.Log("End drag");
+        UnityEngine.Debug.Log("End drag");
     }
 
     //Drag and Drop code for bird objects
@@ -64,7 +68,7 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
         SetSelected(true);
 
         //Deselects all birds other than this one
-        foreach (Bird bird in allBirds)
+        foreach (Bird bird in birdManager.allBirds)
         {
             if (bird != this)
             {
@@ -90,9 +94,9 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
         }
     }
 
-    public static Bird GetSelectedBird()
+    public Bird GetSelectedBird()
     {
-        foreach (Bird bird in allBirds)
+        foreach (Bird bird in birdManager.allBirds)
         {
             if (bird.isSelected)
                 return bird;
@@ -103,7 +107,7 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
     //Coroutine for playing the bird sounds
     IEnumerator PlayBirdSound(AudioClip clipToPlay)
     {
-        yield return new WaitForSeconds(mic.actualDuration + 1f);
+       // yield return new WaitForSeconds(mic.actualDuration + 1f);
         
         GetComponent<SpriteRenderer>().sprite = openBird;
 
@@ -121,7 +125,7 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
         notesAnimator.StopPlayback();
 
         // Broadcasts clip to all other birds in its radius
-        foreach (Bird bird in allBirds)
+        foreach (Bird bird in birdManager.allBirds)
         {
             if (bird != this && IsInHearingRange(bird))
             {
@@ -152,5 +156,14 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
         return Vector3.Distance(transform.position, other.transform.position) <= hearingRadius;
     }
 
-
+    void RunAlgorithm(string input)
+    {
+        Process process = new Process();
+        string path = Path.Combine(Application.dataPath, "birdSoundAlgo.exe");
+        process.StartInfo.FileName = path;
+        process.StartInfo.Arguments = "recordings/"+input+".raw"+" "+"recordings/"+gameObject.name+".raw"+" "+"recordings/birdSound.raw"+" "+attackThreshold+" "+releaseThreshold+" "+peakPickThreshold; // Optional: add command line arguments recordings/input.raw recordings/output.raw recordings/bird.raw 0.010 0.005 0.008
+        process.StartInfo.CreateNoWindow = true;
+        process.StartInfo.UseShellExecute = false;
+        process.Start();
+    }
 }
