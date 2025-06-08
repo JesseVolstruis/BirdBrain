@@ -15,6 +15,8 @@ public class MicManager : MonoBehaviour
     public float actualDuration; //Length in seconds for the actual recorderd clip
     public int inputNumber = 0;
     string fileName;
+    [SerializeField]
+    BirdManager birdManager;
     void Start()
     {
       
@@ -35,12 +37,8 @@ public class MicManager : MonoBehaviour
     {
         audioSource.clip = audioClip;
         audioSource.Play();
-        //Finds currently selected bird and calls its PlayBird function
-        //Bird selectedBird = Bird.GetSelectedBird();
-        //if (selectedBird != null)
-        //{
-        //    selectedBird.PlayBird();
-        //}
+        birdManager.SetCurrentClip(fileName);
+        birdManager.sendToNextBird();
     }
     //Stops recording
     public void StopRecording()
@@ -52,10 +50,11 @@ public class MicManager : MonoBehaviour
         actualDuration = samplesRecorded / (float)sampleRate;
 
         Debug.Log("Actual Duration: " + actualDuration);
-        fileName = "input" + inputNumber + ".raw";
-        string folder = Path.Combine(Application.dataPath, "Recordings");
+        fileName = "input" + inputNumber;
+        string projectRoot = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
+        string folder = Path.Combine(projectRoot, "Recordings");
         Directory.CreateDirectory(folder); 
-        SaveRawFile(Path.Combine(folder, fileName), audioClip);
+        SaveRawFile(Path.Combine(folder, fileName+".raw"), audioClip);
         inputNumber++;
     }
     void SaveRawFile(string filePath, AudioClip clip)

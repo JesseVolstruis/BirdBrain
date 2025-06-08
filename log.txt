@@ -1,0 +1,78 @@
+Syllable-to-Bird Sound Processor (Hybrid Algorithm)
+--- Parameters ---
+Input File: Recordings/GreenBird.raw
+Output File: Recordings/BlueBird.raw
+Bird Sound File: Recordings/birdSound.raw
+Attack Threshold: 0.01
+Release Threshold: 0.005
+Peak Pick Threshold: 0.008
+--------------------
+Starting Hybrid Schmitt/Peak-Picking detection...
+Note detected at sample 11008, Pitch: 0 Hz, Peak Volume: 0.19854
+Note detected at sample 13312, Pitch: 0 Hz, Peak Volume: 0.468525
+Note detected at sample 16128, Pitch: 0 Hz, Peak Volume: 0.469732
+Note detected at sample 18432, Pitch: 0 Hz, Peak Volume: 0.425584
+Note detected at sample 20480, Pitch: 0 Hz, Peak Volume: 0.334457
+Note detected at sample 21248, Pitch: 0 Hz, Peak Volume: 0.540591
+Note detected at sample 23552, Pitch: 0 Hz, Peak Volume: 0.42454
+Note detected at sample 25600, Pitch: 0 Hz, Peak Volume: 0.476453
+Note detected at sample 27648, Pitch: 0 Hz, Peak Volume: 0.466355
+Note detected at sample 29952, Pitch: 0 Hz, Peak Volume: 0.468945
+Note detected at sample 32256, Pitch: 0 Hz, Peak Volume: 0.321904
+Note detected at sample 33024, Pitch: 0 Hz, Peak Volume: 0.442167
+Note detected at sample 34816, Pitch: 0 Hz, Peak Volume: 0.475613
+Note detected at sample 36864, Pitch: 0 Hz, Peak Volume: 0.432237
+Note detected at sample 38400, Pitch: 0 Hz, Peak Volume: 0.309789
+Note detected at sample 39168, Pitch: 0 Hz, Peak Volume: 0.338572
+Detected 16 final syllable events.
+Generating bird speech output...
+  Syllable at sample: 11008, Pitch: 0 Hz, Peak Volume: 0.19854 (Scale: 1), Target Bird Pitch: 1200 Hz
+  Syllable at sample: 13312, Pitch: 0 Hz, Peak Volume: 0.468525 (Scale: 1), Target Bird Pitch: 1200 Hz
+  Syllable at sample: 16128, Pitch: 0 Hz, Peak Volume: 0.469732 (Scale: 1), Target Bird Pitch: 1200 Hz
+  Syllable at sample: 18432, Pitch: 0 Hz, Peak Volume: 0.425584 (Scale: 1), Target Bird Pitch: 1200 Hz
+  Syllable at sample: 20480, Pitch: 0 Hz, Peak Volume: 0.334457 (Scale: 1), Target Bird Pitch: 1200 Hz
+  Syllable at sample: 21248, Pitch: 0 Hz, Peak Volume: 0.540591 (Scale: 1), Target Bird Pitch: 1200 Hz
+  Syllable at sample: 23552, Pitch: 0 Hz, Peak Volume: 0.42454 (Scale: 1), Target Bird Pitch: 1200 Hz
+  Syllable at sample: 25600, Pitch: 0 Hz, Peak Volume: 0.476453 (Scale: 1), Target Bird Pitch: 1200 Hz
+  Syllable at sample: 27648, Pitch: 0 Hz, Peak Volume: 0.466355 (Scale: 1), Target Bird Pitch: 1200 Hz
+  Syllable at sample: 29952, Pitch: 0 Hz, Peak Volume: 0.468945 (Scale: 1), Target Bird Pitch: 1200 Hz
+  Syllable at sample: 32256, Pitch: 0 Hz, Peak Volume: 0.321904 (Scale: 1), Target Bird Pitch: 1200 Hz
+  Syllable at sample: 33024, Pitch: 0 Hz, Peak Volume: 0.442167 (Scale: 1), Target Bird Pitch: 1200 Hz
+  Syllable at sample: 34816, Pitch: 0 Hz, Peak Volume: 0.475613 (Scale: 1), Target Bird Pitch: 1200 Hz
+  Syllable at sample: 36864, Pitch: 0 Hz, Peak Volume: 0.432237 (Scale: 1), Target Bird Pitch: 1200 Hz
+  Syllable at sample: 38400, Pitch: 0 Hz, Peak Volume: 0.309789 (Scale: 1), Target Bird Pitch: 1200 Hz
+  Syllable at sample: 39168, Pitch: 0 Hz, Peak Volume: 0.338572 (Scale: 1), Target Bird Pitch: 1200 Hz
+Writing final bird speech audio to: Recordings/BlueBird.raw
+
+Attempting to convert RAW output to WAV with FFmpeg...
+Executing command: ffmpeg -y -f s16le -ar 16000 -ac 1 -i "Recordings/BlueBird.raw" "Recordings/BlueBird.wav"
+ffmpeg version N-119686-gae0f71a387-20250525 Copyright (c) 2000-2025 the FFmpeg developers
+  built with gcc 15.1.0 (crosstool-NG 1.27.0.42_35c1e72)
+  configuration: --prefix=/ffbuild/prefix --pkg-config-flags=--static --pkg-config=pkg-config --cross-prefix=x86_64-w64-mingw32- --arch=x86_64 --target-os=mingw32 --enable-gpl --enable-version3 --disable-debug --disable-w32threads --enable-pthreads --enable-iconv --enable-zlib --enable-libfribidi --enable-gmp --enable-libxml2 --enable-lzma --enable-fontconfig --enable-libharfbuzz --enable-libfreetype --enable-libvorbis --enable-opencl --disable-libpulse --enable-libvmaf --disable-libxcb --disable-xlib --enable-amf --enable-libaom --enable-libaribb24 --enable-avisynth --enable-chromaprint --enable-libdav1d --enable-libdavs2 --enable-libdvdread --enable-libdvdnav --disable-libfdk-aac --enable-ffnvcodec --enable-cuda-llvm --enable-frei0r --enable-libgme --enable-libkvazaar --enable-libaribcaption --enable-libass --enable-libbluray --enable-libjxl --enable-libmp3lame --enable-libopus --enable-librist --enable-libssh --enable-libtheora --enable-libvpx --enable-libwebp --enable-libzmq --enable-lv2 --enable-libvpl --enable-openal --enable-liboapv --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopenh264 --enable-libopenjpeg --enable-libopenmpt --enable-librav1e --enable-librubberband --enable-schannel --enable-sdl2 --enable-libsnappy --enable-libsoxr --enable-libsrt --enable-libsvtav1 --enable-libtwolame --enable-libuavs3d --disable-libdrm --enable-vaapi --enable-libvidstab --enable-vulkan --enable-libshaderc --enable-libplacebo --enable-libvvenc --enable-libx264 --enable-libx265 --enable-libxavs2 --enable-libxvid --enable-libzimg --enable-libzvbi --extra-cflags=-DLIBTWOLAME_STATIC --extra-cxxflags= --extra-libs=-lgomp --extra-ldflags=-pthread --extra-ldexeflags= --cc=x86_64-w64-mingw32-gcc --cxx=x86_64-w64-mingw32-g++ --ar=x86_64-w64-mingw32-gcc-ar --ranlib=x86_64-w64-mingw32-gcc-ranlib --nm=x86_64-w64-mingw32-gcc-nm --extra-version=20250525
+  libavutil      60.  3.100 / 60.  3.100
+  libavcodec     62.  3.101 / 62.  3.101
+  libavformat    62.  0.102 / 62.  0.102
+  libavdevice    62.  0.100 / 62.  0.100
+  libavfilter    11.  0.100 / 11.  0.100
+  libswscale      9.  0.100 /  9.  0.100
+  libswresample   6.  0.100 /  6.  0.100
+[s16le @ 0000014ad4ba7440] Estimating duration from bitrate, this may be inaccurate
+[aist#0:0/pcm_s16le @ 0000014ad4bbfd40] Guessed Channel Layout: mono
+Input #0, s16le, from 'Recordings/BlueBird.raw':
+  Duration: 00:00:10.00, bitrate: 256 kb/s
+  Stream #0:0: Audio: pcm_s16le, 16000 Hz, mono, s16, 256 kb/s
+Stream mapping:
+  Stream #0:0 -> #0:0 (pcm_s16le (native) -> pcm_s16le (native))
+Press [q] to stop, [?] for help
+Output #0, wav, to 'Recordings/BlueBird.wav':
+  Metadata:
+    ISFT            : Lavf62.0.102
+  Stream #0:0: Audio: pcm_s16le ([1][0][0][0] / 0x0001), 16000 Hz, mono, s16, 256 kb/s
+    Metadata:
+      encoder         : Lavc62.3.101 pcm_s16le
+[out#0/wav @ 0000014ad4b686c0] video:0KiB audio:312KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 0.024375%
+size=     313KiB time=00:00:10.00 bitrate= 256.1kbits/s speed=1.4e+03x elapsed=0:00:00.00    
+Successfully created Recordings/BlueBird.wav
+
+Processing complete!
+Press ENTER to exit...

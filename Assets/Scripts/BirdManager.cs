@@ -20,6 +20,14 @@ public class BirdManager : MonoBehaviour
     }
     public void SetCurrentClip(string path)
     {
-        currentclip = "recordings/"+path;
+        currentclip = path;
+    }
+
+    public void sendToNextBird()
+    {
+        allBirds[index].ReceiveClip(currentclip);
+        if (index < allBirds.Count-1) index++;
+        else index = 0;
+
     }
 }
