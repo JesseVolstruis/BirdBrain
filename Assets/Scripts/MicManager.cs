@@ -1,5 +1,5 @@
 using System.Collections;
-using System.Collections.Generic;
+using System;
 using System.IO;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -17,6 +17,7 @@ public class MicManager : MonoBehaviour
     string fileName;
     [SerializeField]
     BirdManager birdManager;
+    public static event Action OnStopNotRecording;
     void Start()
     {
       
@@ -43,19 +44,27 @@ public class MicManager : MonoBehaviour
     //Stops recording
     public void StopRecording()
     {
-        int samplesRecorded = Microphone.GetPosition(null);
+        if (Microphone.IsRecording(null))
+        {
+            int samplesRecorded = Microphone.GetPosition(null);
 
-        Microphone.End(null);
+            Microphone.End(null);
 
-        actualDuration = samplesRecorded / (float)sampleRate;
+            actualDuration = samplesRecorded / (float)sampleRate;
 
-        Debug.Log("Actual Duration: " + actualDuration);
-        fileName = "input" + inputNumber;
-        string projectRoot = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
-        string folder = Path.Combine(projectRoot, "Recordings");
-        Directory.CreateDirectory(folder); 
-        SaveRawFile(Path.Combine(folder, fileName+".raw"), audioClip);
-        inputNumber++;
+            Debug.Log("Actual Duration: " + actualDuration);
+            fileName = "input" + inputNumber;
+            string projectRoot = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
+            string folder = Path.Combine(projectRoot, "Recordings");
+            Directory.CreateDirectory(folder);
+            SaveRawFile(Path.Combine(folder, fileName + ".raw"), audioClip);
+            inputNumber++;
+        }
+        else
+        {
+            OnStopNotRecording?.Invoke();
+        }
+        
     }
     void SaveRawFile(string filePath, AudioClip clip)
     {

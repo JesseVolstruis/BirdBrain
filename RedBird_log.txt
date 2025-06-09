@@ -1,0 +1,13 @@
+Syllable-to-Bird Sound Processor (Hybrid Algorithm)
+--- Parameters ---
+Input File: Recordings/BlueBird.raw
+Output File: Recordings/RedBird.raw
+Bird Sound File: Recordings/redBirdSound.raw
+Attack Threshold: 0.01
+Release Threshold: 0.005
+Peak Pick Threshold: 0.008
+--------------------
+Starting Hybrid Schmitt/Peak-Picking detection...
+No syllable events detected.
+
+Press ENTER to exit...

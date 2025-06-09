@@ -1,0 +1,64 @@
+Syllable-to-Bird Sound Processor (Hybrid Algorithm)
+--- Parameters ---
+Input File: Recordings/RedBird.raw
+Output File: Recordings/GreenBird.raw
+Bird Sound File: Recordings/birdSound.raw
+Attack Threshold: 0.01
+Release Threshold: 0.005
+Peak Pick Threshold: 0.008
+--------------------
+Starting Hybrid Schmitt/Peak-Picking detection...
+Note detected at sample 15360, Pitch: 0 Hz, Peak Volume: 0.0770817
+Note detected at sample 17920, Pitch: 0 Hz, Peak Volume: 0.0595408
+Note detected at sample 26624, Pitch: 0 Hz, Peak Volume: 0.0613958
+Note detected at sample 28416, Pitch: 0 Hz, Peak Volume: 0.0400606
+Note detected at sample 30976, Pitch: 0 Hz, Peak Volume: 0.0251481
+Note detected at sample 36608, Pitch: 0 Hz, Peak Volume: 0.0617395
+Note detected at sample 38656, Pitch: 0 Hz, Peak Volume: 0.0482603
+Note detected at sample 39168, Pitch: 0 Hz, Peak Volume: 0.0583328
+Note detected at sample 41216, Pitch: 0 Hz, Peak Volume: 0.0300643
+Detected 9 final syllable events.
+Generating bird speech output...
+  Syllable at sample: 15360, Pitch: 0 Hz, Peak Volume: 0.0770817 (Scale: 1), Target Bird Pitch: 1200 Hz
+  Syllable at sample: 17920, Pitch: 0 Hz, Peak Volume: 0.0595408 (Scale: 1), Target Bird Pitch: 1200 Hz
+  Syllable at sample: 26624, Pitch: 0 Hz, Peak Volume: 0.0613958 (Scale: 1), Target Bird Pitch: 1200 Hz
+  Syllable at sample: 28416, Pitch: 0 Hz, Peak Volume: 0.0400606 (Scale: 0.949402), Target Bird Pitch: 1200 Hz
+  Syllable at sample: 30976, Pitch: 0 Hz, Peak Volume: 0.0251481 (Scale: 0.752218), Target Bird Pitch: 1200 Hz
+  Syllable at sample: 36608, Pitch: 0 Hz, Peak Volume: 0.0617395 (Scale: 1), Target Bird Pitch: 1200 Hz
+  Syllable at sample: 38656, Pitch: 0 Hz, Peak Volume: 0.0482603 (Scale: 1), Target Bird Pitch: 1200 Hz
+  Syllable at sample: 39168, Pitch: 0 Hz, Peak Volume: 0.0583328 (Scale: 1), Target Bird Pitch: 1200 Hz
+  Syllable at sample: 41216, Pitch: 0 Hz, Peak Volume: 0.0300643 (Scale: 0.822464), Target Bird Pitch: 1200 Hz
+Writing final bird speech audio to: Recordings/GreenBird.raw
+
+Attempting to convert RAW output to WAV with FFmpeg...
+Executing command: ffmpeg -y -f s16le -ar 16000 -ac 1 -i "Recordings/GreenBird.raw" "Recordings/GreenBird.wav"
+ffmpeg version N-119686-gae0f71a387-20250525 Copyright (c) 2000-2025 the FFmpeg developers
+  built with gcc 15.1.0 (crosstool-NG 1.27.0.42_35c1e72)
+  configuration: --prefix=/ffbuild/prefix --pkg-config-flags=--static --pkg-config=pkg-config --cross-prefix=x86_64-w64-mingw32- --arch=x86_64 --target-os=mingw32 --enable-gpl --enable-version3 --disable-debug --disable-w32threads --enable-pthreads --enable-iconv --enable-zlib --enable-libfribidi --enable-gmp --enable-libxml2 --enable-lzma --enable-fontconfig --enable-libharfbuzz --enable-libfreetype --enable-libvorbis --enable-opencl --disable-libpulse --enable-libvmaf --disable-libxcb --disable-xlib --enable-amf --enable-libaom --enable-libaribb24 --enable-avisynth --enable-chromaprint --enable-libdav1d --enable-libdavs2 --enable-libdvdread --enable-libdvdnav --disable-libfdk-aac --enable-ffnvcodec --enable-cuda-llvm --enable-frei0r --enable-libgme --enable-libkvazaar --enable-libaribcaption --enable-libass --enable-libbluray --enable-libjxl --enable-libmp3lame --enable-libopus --enable-librist --enable-libssh --enable-libtheora --enable-libvpx --enable-libwebp --enable-libzmq --enable-lv2 --enable-libvpl --enable-openal --enable-liboapv --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopenh264 --enable-libopenjpeg --enable-libopenmpt --enable-librav1e --enable-librubberband --enable-schannel --enable-sdl2 --enable-libsnappy --enable-libsoxr --enable-libsrt --enable-libsvtav1 --enable-libtwolame --enable-libuavs3d --disable-libdrm --enable-vaapi --enable-libvidstab --enable-vulkan --enable-libshaderc --enable-libplacebo --enable-libvvenc --enable-libx264 --enable-libx265 --enable-libxavs2 --enable-libxvid --enable-libzimg --enable-libzvbi --extra-cflags=-DLIBTWOLAME_STATIC --extra-cxxflags= --extra-libs=-lgomp --extra-ldflags=-pthread --extra-ldexeflags= --cc=x86_64-w64-mingw32-gcc --cxx=x86_64-w64-mingw32-g++ --ar=x86_64-w64-mingw32-gcc-ar --ranlib=x86_64-w64-mingw32-gcc-ranlib --nm=x86_64-w64-mingw32-gcc-nm --extra-version=20250525
+  libavutil      60.  3.100 / 60.  3.100
+  libavcodec     62.  3.101 / 62.  3.101
+  libavformat    62.  0.102 / 62.  0.102
+  libavdevice    62.  0.100 / 62.  0.100
+  libavfilter    11.  0.100 / 11.  0.100
+  libswscale      9.  0.100 /  9.  0.100
+  libswresample   6.  0.100 /  6.  0.100
+[s16le @ 0000025a60132500] Estimating duration from bitrate, this may be inaccurate
+[aist#0:0/pcm_s16le @ 0000025a6014bc00] Guessed Channel Layout: mono
+Input #0, s16le, from 'Recordings/GreenBird.raw':
+  Duration: 00:00:10.00, bitrate: 256 kb/s
+  Stream #0:0: Audio: pcm_s16le, 16000 Hz, mono, s16, 256 kb/s
+Stream mapping:
+  Stream #0:0 -> #0:0 (pcm_s16le (native) -> pcm_s16le (native))
+Press [q] to stop, [?] for help
+Output #0, wav, to 'Recordings/GreenBird.wav':
+  Metadata:
+    ISFT            : Lavf62.0.102
+  Stream #0:0: Audio: pcm_s16le ([1][0][0][0] / 0x0001), 16000 Hz, mono, s16, 256 kb/s
+    Metadata:
+      encoder         : Lavc62.3.101 pcm_s16le
+[out#0/wav @ 0000025a600fa100] video:0KiB audio:312KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 0.024375%
+size=     313KiB time=00:00:10.00 bitrate= 256.1kbits/s speed=1.45e+03x elapsed=0:00:00.00    
+Successfully created Recordings/GreenBird.wav
+
+Processing complete!
+Press ENTER to exit...
