@@ -39,6 +39,12 @@ public class MicManager : MonoBehaviour
         audioSource.clip = audioClip;
         audioSource.Play();
         birdManager.SetCurrentClip(fileName);
+        StartCoroutine(playAndSend());
+    }
+
+    IEnumerator playAndSend()
+    {
+        yield return new WaitForSeconds(actualDuration);
         birdManager.sendToNextBird();
     }
     //Stops recording

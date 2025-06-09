@@ -1,39 +1,38 @@
-using System;
 using System.Collections;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Text;
-using System.Threading.Tasks; // Required for Task-based async
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Networking;
 
 public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndDragHandler, IDragHandler
 {
-    // --- Your existing variables ---
-    MicManager mic;
-    BirdManager birdManager;
+    // --- Public & Serialized Fields ---
+    [Header("Bird Properties")]
     public AudioClip clip;
     public AudioClip originalClip;
-    private AudioSource audioSource;
-    [SerializeField]
-    bool isSelected = false;
-    [SerializeField]
-    float hearingRadius = 4f;
-    private GameObject radiusCircle;
     public Sprite closedBird;
     public Sprite openBird;
     public Animator notesAnimator;
-    public float attackThreshold = 0.01f, releaseThreshold = 0.005f, peakPickThreshold = 0.008f;
+
+    [Header("Audio Analysis Parameters")]
+    public float attackThreshold = 0.01f;
+    public float releaseThreshold = 0.005f;
+    public float peakPickThreshold = 0.008f;
     public string input, birdSound;
 
-    // --- Your existing Awake, Start, OnDestroy, and Drag/Drop functions ---
+    // --- Private Fields ---
+    private MicManager mic;
+    private BirdManager birdManager;
+    private AudioSource audioSource;
+    private bool isSelected = false;
+    private Coroutine pbsCR; // PlayBirdSound Coroutine Reference
+
     private void Awake()
     {
         MicManager.OnStopNotRecording += stopPlayback;
-        radiusCircle = transform.GetChild(0).gameObject;
-        radiusCircle.SetActive(false);
+        transform.GetChild(0).gameObject.SetActive(false); // Disable radius circle initially
         mic = FindAnyObjectByType<MicManager>();
         birdManager = FindAnyObjectByType<BirdManager>();
         audioSource = GetComponent<AudioSource>();
@@ -43,32 +42,33 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
             audioSource = gameObject.AddComponent<AudioSource>();
         }
     }
+
     private void Start()
     {
         birdManager.allBirds.Add(this);
-        audioSource.panStereo = transform.position.x / 9;
-        audioSource.volume = (transform.position.y + 3) / 6;
+        audioSource.panStereo = transform.position.x / 9f;
+        audioSource.volume = (transform.position.y + 3f) / 6f;
     }
 
     private void OnDestroy()
     {
         MicManager.OnStopNotRecording -= stopPlayback;
         birdManager.allBirds.Remove(this);
-        CleanupTempFiles(); // Clean up any temporary files we created
     }
 
-    public void OnBeginDrag(PointerEventData eventData) { }
-    public void OnEndDrag(PointerEventData eventData)
-    {
-        audioSource.panStereo = transform.position.x / 9;
-        audioSource.volume = (transform.position.y + 3) / 6;
-    }
     public void OnDrag(PointerEventData eventData)
     {
         Vector3 worldPos = Camera.main.ScreenToWorldPoint(eventData.position);
         worldPos.z = 0f;
         transform.position = worldPos;
     }
+
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        audioSource.panStereo = transform.position.x / 9f;
+        audioSource.volume = (transform.position.y + 3f) / 6f;
+    }
+
     public void OnPointerDown(PointerEventData eventData)
     {
         SetSelected(true);
@@ -83,24 +83,32 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
         }
     }
 
-    void SetSelected(bool value)
+    // Unused but required by interface
+    public void OnBeginDrag(PointerEventData eventData) { }
+
+
+
+    public void SetSelected(bool value)
     {
         isSelected = value;
-        if (radiusCircle != null) radiusCircle.SetActive(value);
-        if (value) FindAnyObjectByType<Panel>().setSelectedBird(this);
+        transform.GetChild(0).gameObject.SetActive(value);
+        if (value)
+            FindAnyObjectByType<Panel>().setSelectedBird(this);
     }
 
-    public Bird GetSelectedBird()
+    public void PlayBird()
     {
-        foreach (Bird bird in birdManager.allBirds)
-        {
-            if (bird.isSelected) return bird;
-        }
-        return null;
+        if (clip != null)
+            pbsCR = StartCoroutine(PlayBirdSound(clip));
     }
 
-    Coroutine pbsCR;
-    void stopPlayback()
+    public void ReceiveClip(string incomingClipName)
+    {
+        input = incomingClipName;
+        StartCoroutine(ProcessAudioAndPlayCoroutine(input));
+    }
+    
+    private void stopPlayback()
     {
         if (pbsCR != null)
         {
@@ -114,350 +122,126 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
             pbsCR = null;
         }
     }
-    public void PlayBird()
-    {
-        if (clip != null)
-            pbsCR = StartCoroutine(PlayBirdSound(clip));
-    }
 
-    // --- This function now just kicks off the async task ---
-    public void ReceiveClip(string incomingClipName)
+    private IEnumerator ProcessAudioAndPlayCoroutine(string inputRawName)
     {
-        input = incomingClipName;
-        ProcessAudioAndPlayAsync(input); // Call the new async method
-    }
-
-    // --- FULLY REVISED ASYNC METHOD for processing audio ---
-    private async void ProcessAudioAndPlayAsync(string inputRawName)
-    {
-        // 1. Establish paths
         string projectRoot = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
         string exePath = Path.Combine(projectRoot, "birdSoundAlgo.exe");
 
         if (!File.Exists(exePath))
         {
-            UnityEngine.Debug.LogError($"Executable not found at {exePath}.");
-            return;
+            yield break;
         }
 
-        // 2. Construct arguments
-        string arguments = $"{inputRawName}.raw {gameObject.name}.raw {birdSound}.raw " +
+        string recordingsFolder = Path.Combine(projectRoot, "Recordings");
+        if (!Directory.Exists(recordingsFolder)) Directory.CreateDirectory(recordingsFolder);
+
+        string inputPath = Path.Combine(recordingsFolder, $"{inputRawName}.raw");
+        string outputPath = Path.Combine(recordingsFolder, $"{gameObject.name}.raw");
+        string birdSoundPath = Path.Combine(recordingsFolder, $"{birdSound}.raw");
+
+        // 2. Construct arguments with full paths
+        string arguments = $"\"{inputRawName}.raw\" \"{gameObject.name}.raw\" \"{birdSound}.raw\" " +
                            $"{attackThreshold.ToString(CultureInfo.InvariantCulture)} " +
                            $"{releaseThreshold.ToString(CultureInfo.InvariantCulture)} " +
                            $"{peakPickThreshold.ToString(CultureInfo.InvariantCulture)}";
 
-        // 3. Configure the process
+        // 3. Configure and run the external process
         Process process = new Process();
         process.StartInfo.WorkingDirectory = projectRoot;
         process.StartInfo.FileName = exePath;
         process.StartInfo.Arguments = arguments;
         process.StartInfo.CreateNoWindow = true;
         process.StartInfo.UseShellExecute = false;
-        process.StartInfo.RedirectStandardOutput = true;
-        process.StartInfo.RedirectStandardError = true;
 
-        StringBuilder outputLog = new StringBuilder();
-        StringBuilder errorLog = new StringBuilder();
+        UnityEngine.Debug.Log($"Running command: {exePath} {arguments}");
 
-        process.OutputDataReceived += (sender, args) => { if (args.Data != null) outputLog.AppendLine(args.Data); };
-        process.ErrorDataReceived += (sender, args) => { if (args.Data != null) errorLog.AppendLine(args.Data); };
-
-        // 4. Run the process on a background thread using Task.Run
-        int exitCode = -1;
-        UnityEngine.Debug.Log($"Running command on background thread: {exePath} {arguments}");
-
-        await Task.Run(() =>
+        try
         {
-            try
-            {
-                process.Start();
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
-                process.WaitForExit(); // This blocking call now happens safely on a background thread.
-                exitCode = process.ExitCode;
-            }
-            catch (System.Exception e)
-            {
-                errorLog.AppendLine($"\nCRITICAL ERROR: Failed to start or run process: {e.Message}");
-                exitCode = -99; // Use a custom error code
-            }
-            finally
-            {
-                if (process != null) process.Close();
-            }
-        });
+            process.Start();
+        }
+        catch (System.Exception e)
+        {
+            UnityEngine.Debug.LogError($"Failed to start process: {e.Message}");
+            yield break;
+        }
 
-        // --- The code below this point runs back on the main Unity thread ---
-        UnityEngine.Debug.Log($"--- Log for {gameObject.name} (Exit Code: {exitCode}) ---\n" +
-                              $"Output:\n{outputLog}\n" +
-                              $"Errors:\n{errorLog}\n" +
-                              $"--------------------------------------------------");
+        // 4. Wait for the process to finish without blocking the main thread
+        while (!process.HasExited)
+        {
+            yield return null;
+        }
+        int exitCode = process.ExitCode;
+        process.Close();
+
+        UnityEngine.Debug.Log($"Process finished with exit code: {exitCode}");
 
         if (exitCode != 0)
         {
-            UnityEngine.Debug.LogError($"Process exited with error code {exitCode}. Aborting audio load.");
-            return;
+            UnityEngine.Debug.LogError($"External process failed with exit code {exitCode}.");
+            yield break;
         }
 
-        // 5. Load the generated WAV file using robust loading
-        string recordingsFolder = "recordings";
-        string outputWavPath = Path.Combine(projectRoot, recordingsFolder, gameObject.name + ".wav");
+        // 5. Load the generated WAV file
+        string outputWavPath = Path.Combine(recordingsFolder, gameObject.name + ".wav");
 
-        if (!File.Exists(outputWavPath))
+        // This helper coroutine waits until the file is no longer locked by the OS
+        yield return StartCoroutine(WaitUntilFileIsReady(outputWavPath));
+
+        var url = new System.Uri(outputWavPath).AbsoluteUri;
+        UnityEngine.Debug.Log($"File is ready. Attempting to load from: {url}");
+
+        using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(url, AudioType.WAV))
         {
-            UnityEngine.Debug.LogError($"Output file not found at {outputWavPath}. The external process might have failed.");
-            return;
-        }
+            yield return www.SendWebRequest();
 
-        UnityEngine.Debug.Log($"Process completed successfully. Starting robust audio load from: {outputWavPath}");
-
-        // Use the new robust loading method instead of the simple coroutine
-        AudioClip loadedClip = await LoadAudioFileRobust(outputWavPath);
-
-        if (loadedClip != null)
-        {
-            UnityEngine.Debug.Log($"Successfully loaded audio clip via robust method. Starting playback.");
-            // Start playback directly here instead of using a coroutine
-            pbsCR = StartCoroutine(PlayBirdSound(loadedClip));
-        }
-        else
-        {
-            UnityEngine.Debug.LogError($"Failed to load audio file using all robust methods: {outputWavPath}");
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                UnityEngine.Debug.LogError($"Error loading audio file: {www.error}");
+            }
+            else
+            {
+                AudioClip loadedClip = DownloadHandlerAudioClip.GetContent(www);
+                if (loadedClip == null || loadedClip.loadState != AudioDataLoadState.Loaded)
+                {
+                    UnityEngine.Debug.LogError("Failed to get a valid AudioClip from the downloaded data.");
+                    yield break;
+                }
+                UnityEngine.Debug.Log($"Successfully loaded new clip for {gameObject.name}");
+                this.clip = loadedClip; 
+                pbsCR = StartCoroutine(PlayBirdSound(loadedClip));
+            }
         }
     }
 
-    // --- ROBUST AUDIO LOADING METHODS ---
-
-    /// <summary>
-    /// Loads an audio file with multiple fallback strategies to handle build-specific issues
-    /// </summary>
-    private async Task<AudioClip> LoadAudioFileRobust(string filePath, AudioType audioType = AudioType.WAV)
+    private IEnumerator WaitUntilFileIsReady(string filePath)
     {
-        UnityEngine.Debug.Log($"Starting robust audio load for: {filePath}");
-
-        // Strategy 1: Wait for file system stabilization
-        if (!await WaitForFileStabilization(filePath))
+        int maxRetries = 20; 
+        for (int i = 0; i < maxRetries; i++)
         {
-            UnityEngine.Debug.LogError($"File never stabilized: {filePath}");
-            return null;
-        }
-
-        // Strategy 2: Try direct UnityWebRequest first
-        AudioClip clip = await LoadWithUnityWebRequest(filePath, audioType);
-        if (clip != null)
-        {
-            UnityEngine.Debug.Log("Successfully loaded with UnityWebRequest");
-            return clip;
-        }
-
-        // Strategy 3: Copy to persistent data path and load
-        clip = await LoadViaCopyToPersistentData(filePath, audioType);
-        if (clip != null)
-        {
-            UnityEngine.Debug.Log("Successfully loaded via PersistentDataPath copy");
-            return clip;
-        }
-
-        // Strategy 4: Try with explicit file refresh
-        clip = await LoadWithFileRefresh(filePath, audioType);
-        if (clip != null)
-        {
-            UnityEngine.Debug.Log("Successfully loaded with file refresh");
-            return clip;
-        }
-
-        UnityEngine.Debug.LogError($"All loading strategies failed for: {filePath}");
-        return null;
-    }
-
-    /// <summary>
-    /// Waits for the file to be completely written and stable
-    /// </summary>
-    private async Task<bool> WaitForFileStabilization(string filePath)
-    {
-        const int maxAttempts = 50; // 5 seconds total
-        const int delayMs = 100;
-
-        for (int attempt = 0; attempt < maxAttempts; attempt++)
-        {
+            if (!File.Exists(filePath))
+            {
+                yield return new WaitForSeconds(0.01f);
+                continue;
+            }
             try
             {
-                if (!File.Exists(filePath))
+                using (FileStream stream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
-                    await Task.Delay(delayMs);
-                    continue;
-                }
-
-                // Check if file is still being written by trying to open it exclusively
-                using (FileStream fs = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.None))
-                {
-                    // If we can open it exclusively, it's not being written to
-                    if (fs.Length > 0)
-                    {
-                        UnityEngine.Debug.Log($"File stabilized after {attempt * delayMs}ms: {filePath} ({fs.Length} bytes)");
-                        return true;
-                    }
+                    UnityEngine.Debug.Log($"File found and accessible at: {filePath}");
+                    yield break;
                 }
             }
             catch (IOException)
             {
-                // File is still being written or locked
-                await Task.Delay(delayMs);
-                continue;
-            }
-            catch (UnauthorizedAccessException)
-            {
-                // Permission issue - try a different approach
-                if (File.Exists(filePath) && new FileInfo(filePath).Length > 0)
-                {
-                    await Task.Delay(delayMs * 2); // Wait longer for permission issues
-                    return true;
-                }
+                UnityEngine.Debug.LogWarning($"File is locked, retrying... ({i + 1}/{maxRetries})");
+            
             }
         }
-
-        return false;
+        UnityEngine.Debug.LogError($"File at {filePath} could not be accessed after {maxRetries} retries.");
     }
 
-    /// <summary>
-    /// Standard UnityWebRequest loading with proper async handling
-    /// </summary>
-    private async Task<AudioClip> LoadWithUnityWebRequest(string filePath, AudioType audioType)
-    {
-        try
-        {
-            string uri = GetFileUri(filePath);
-            UnityEngine.Debug.Log($"Loading with UnityWebRequest: {uri}");
-
-            using (UnityWebRequest request = UnityWebRequestMultimedia.GetAudioClip(uri, audioType))
-            {
-                // Set additional properties that can help with file access
-                request.timeout = 10;
-
-                var operation = request.SendWebRequest();
-
-                // Convert Unity operation to async
-                while (!operation.isDone)
-                {
-                    await Task.Delay(50);
-                }
-
-                if (request.result == UnityWebRequest.Result.Success)
-                {
-                    AudioClip clip = DownloadHandlerAudioClip.GetContent(request);
-                    if (clip != null && clip.length > 0)
-                    {
-                        return clip;
-                    }
-                }
-
-                UnityEngine.Debug.LogWarning($"UnityWebRequest failed: {request.error} | Result: {request.result}");
-            }
-        }
-        catch (System.Exception e)
-        {
-            UnityEngine.Debug.LogWarning($"UnityWebRequest exception: {e.Message}");
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// Copy file to PersistentDataPath and load from there
-    /// </summary>
-    private async Task<AudioClip> LoadViaCopyToPersistentData(string sourceFilePath, AudioType audioType)
-    {
-        try
-        {
-            string persistentPath = Path.Combine(Application.persistentDataPath, "temp_audio");
-            Directory.CreateDirectory(persistentPath);
-
-            string fileName = Path.GetFileName(sourceFilePath);
-            string destinationPath = Path.Combine(persistentPath, fileName);
-
-            // Copy the file
-            File.Copy(sourceFilePath, destinationPath, true);
-
-            // Wait a moment for the copy to settle
-            await Task.Delay(200);
-
-            // Load from the copied location
-            return await LoadWithUnityWebRequest(destinationPath, audioType);
-        }
-        catch (System.Exception e)
-        {
-            UnityEngine.Debug.LogWarning($"PersistentDataPath copy strategy failed: {e.Message}");
-            return null;
-        }
-    }
-
-    /// <summary>
-    /// Try loading with explicit file system refresh
-    /// </summary>
-    private async Task<AudioClip> LoadWithFileRefresh(string filePath, AudioType audioType)
-    {
-        try
-        {
-            // Force a file system refresh by accessing file properties
-            var fileInfo = new FileInfo(filePath);
-            fileInfo.Refresh();
-
-            UnityEngine.Debug.Log($"File refresh - Size: {fileInfo.Length}, Exists: {fileInfo.Exists}");
-
-            // Wait a bit more
-            await Task.Delay(300);
-
-            // Try loading again
-            return await LoadWithUnityWebRequest(filePath, audioType);
-        }
-        catch (System.Exception e)
-        {
-            UnityEngine.Debug.LogWarning($"File refresh strategy failed: {e.Message}");
-            return null;
-        }
-    }
-
-    /// <summary>
-    /// Gets the proper file URI for the platform
-    /// </summary>
-    private string GetFileUri(string filePath)
-    {
-        // Ensure we have the absolute path
-        string absolutePath = Path.GetFullPath(filePath);
-
-        // Convert to proper URI format
-        if (Application.platform == RuntimePlatform.WindowsPlayer ||
-            Application.platform == RuntimePlatform.WindowsEditor)
-        {
-            return "file:///" + absolutePath.Replace('\\', '/');
-        }
-        else
-        {
-            return "file://" + absolutePath;
-        }
-    }
-
-    /// <summary>
-    /// Clean up temporary files
-    /// </summary>
-    private void CleanupTempFiles()
-    {
-        try
-        {
-            string persistentTempPath = Path.Combine(Application.persistentDataPath, "temp_audio");
-            if (Directory.Exists(persistentTempPath))
-            {
-                Directory.Delete(persistentTempPath, true);
-            }
-        }
-        catch (System.Exception e)
-        {
-            UnityEngine.Debug.LogWarning($"Failed to cleanup temp files: {e.Message}");
-        }
-    }
-
-    // --- REVISED PlayBirdSound Coroutine (unchanged from your original) ---
-    IEnumerator PlayBirdSound(AudioClip clipToPlay)
+    private IEnumerator PlayBirdSound(AudioClip clipToPlay)
     {
         if (audioSource == null || clipToPlay == null)
         {
@@ -465,20 +249,18 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
             yield break;
         }
 
-        // This short wait can help prevent sounds from stomping on each other if called in rapid succession.
-        yield return new WaitForSeconds(clipToPlay.length);
+        
+
+
 
         GetComponent<SpriteRenderer>().sprite = openBird;
-        if (notesAnimator != null)
-        {
+        
             notesAnimator.gameObject.SetActive(true);
             notesAnimator.Play("MusicNotesFloat", -1, 0f);
-        }
 
         audioSource.PlayOneShot(clipToPlay);
 
-        // Wait for the duration of the NEW clip.
-        yield return new WaitForSeconds(clipToPlay.length);
+        yield return new WaitForSeconds(mic.actualDuration);
 
         GetComponent<SpriteRenderer>().sprite = closedBird;
         if (notesAnimator != null)
@@ -490,4 +272,6 @@ public class Bird : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndD
         birdManager.sendToNextBird();
         pbsCR = null;
     }
+
+    
 }
